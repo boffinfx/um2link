@@ -1,0 +1,55 @@
+UM2 LINK ASIO DRIVER
+END USER LICENSE AGREEMENT (EULA)
+LAST UPDATED: August 13, 2026
+
+IMPORTANT: READ THIS AGREEMENT CAREFULLY BEFORE DOWNLOADING, INSTALLING, COPYING, OR USING THIS SOFTWARE. BY DOWNLOADING, INSTALLING, OR USING THIS SOFTWARE, YOU ACCEPT AND AGREE TO BE BOUND BY ALL TERMS AND CONDITIONS OF THIS AGREEMENT. IF YOU DO NOT AGREE TO THESE TERMS, DO NOT DOWNLOAD, INSTALL, OR USE THE SOFTWARE.
+
+1. GRANT OF LICENSE & SCOPE
+Subject to your strict compliance with this Agreement, Boffin FX ("Licensor") grants you a personal, revocable, non-exclusive, non-transferable, non-sublicensable, royalty-free license to download, install, and execute the compiled binary version of the UM2 LINK ASIO Driver software package, including associated documentation ("Software"), solely for your personal, internal, or commercial audio production hardware interfacing.
+
+2. INTELLECTUAL PROPERTY & OWNERSHIP
+The Software is licensed, not sold. Licensor retains all right, title, and interest in and to the Software, including all underlying source code, binary code, algorithms, interface designs, documentation, branding, and derivative works, as well as all associated patent, copyright, trade secret, trademark, and other intellectual property rights. All rights not expressly granted to you herein are strictly reserved by Licensor.
+
+3. RESTRICTIONS
+You shall not, directly or indirectly, nor permit any third party to:
+
+(a) Decompile, disassemble, reverse engineer, decrypt, modify, translate, adapt, or attempt to derive source code, underlying ideas, or algorithms from the Software (except to the extent applicable law expressly prohibits such restrictions);
+(b) Sell, rent, lease, sublicense, distribute, host, outsource, time-share, or otherwise commercially exploit the Software as a standalone product or third-party utility;
+(c) Create derivative works, modifications, or customized versions based upon the Software;
+(d) Remove, alter, obscure, or render illegible any copyright, trademark, patent notices, or proprietary legends contained within or on the Software or its installer;
+(e) Bypass, disable, or circumvent any technical protections, version checks, or security features built into the Software.
+4. FREEWARE NATURE & "USE AT YOUR OWN RISK"
+You expressly acknowledge that the Software is provided free of charge ("Freeware"). As non-commercial, zero-cost software, the Software may contain bugs, errors, driver conflicts, or system incompatibilities.
+
+YOU EXPRESSLY ACKNOWLEDGE AND AGREE THAT YOUR USE OF THE SOFTWARE IS AT YOUR SOLE RISK. YOU ASSUME FULL RESPONSIBILITY FOR ANY SYSTEM INSTABILITY, HARDWARE DAMAGE, SYSTEM CRASHES, AUDIO BUFFER ERRORS, LOSS OF UNSAVED DATA, OR EQUIPMENT MALFUNCTION THAT MAY RESULT FROM INSTALLING OR OPERATING THIS DRIVER.
+
+5. FEEDBACK AND USER SUBMISSIONS
+If you provide Licensor with any feedback, crash reports, feature requests, error logs, or suggestions regarding the Software ("Feedback"), you hereby assign to Licensor all rights, title, and interest in and to such Feedback. Licensor shall be free to use, disclose, reproduce, license, or distribute such Feedback without obligation, royalty, or compensation to you.
+
+6. DISCLAIMER OF WARRANTIES
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE," WITH ALL FAULTS AND WITHOUT WARRANTY OF ANY KIND. LICENSOR EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, SATISFACTORY QUALITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY, QUIET ENJOYMENT, AND NON-INFRINGEMENT OF THIRD-PARTY RIGHTS.
+
+LICENSOR DOES NOT WARRANT THAT THE SOFTWARE WILL MEET YOUR REQUIREMENTS, THAT OPERATIONAL LATENCY WILL BE ELIMINATED, THAT OPERATION WILL BE UNINTERRUPTED OR ERROR-FREE, OR THAT THE SOFTWARE WILL BE COMPATIBLE WITH FUTURE OPERATING SYSTEM UPDATES OR THIRD-PARTY DIGITAL AUDIO WORKSTATIONS (DAWs).
+
+7. LIMITATION OF LIABILITY
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL LICENSOR, ITS OWNERS, AFFILIATES, DEVELOPERS, OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF PROFITS, LOSS OF DATA, BUSINESS INTERRUPTION, EQUIPMENT DAMAGE, STUDIO DOWN-TIME, OR COST OF PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES) HOWEVER CAUSED AND UNDER ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE), ARISING OUT OF OR IN CONNECTION WITH THE USE OR INABILITY TO USE THE SOFTWARE, EVEN IF LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+IN JURISDICTIONS THAT DO NOT ALLOW THE EXCLUSION OR LIMITATION OF LIABILITY FOR DIRECT OR CONSEQUENTIAL DAMAGES, LICENSOR’S TOTAL AGGREGATE LIABILITY TO YOU FOR ALL CLAIMS ARISING OUT OF OR RELATING TO THIS AGREEMENT OR THE USE OF THE SOFTWARE SHALL NOT EXCEED THE TOTAL AMOUNT ACTUALLY PAID BY YOU FOR THE SOFTWARE, OR FIFTY UNITED STATES DOLLARS ($50.00 USD), WHICHEVER IS LESS.
+
+8. INDEMNIFICATION
+You agree to indemnify, defend, and hold harmless Licensor, its owners, developers, and agents from and against any and all claims, demands, liabilities, damages, losses, costs, and expenses (including reasonable attorneys' fees) arising out of or in connection with: (a) your use or misuse of the Software; (b) your breach of any provision of this Agreement; or (c) your violation of any rights of a third party.
+
+9. TERMINATION
+This Agreement is effective from the date you first download, install, or use the Software until terminated. Licensor may terminate this Agreement at any time, with or without cause, upon notice (including posting notice on Licensor's official website or software repository). This Agreement terminates automatically and without notice if you fail to comply with any of its terms. Upon termination, you must immediately cease all use of the Software and permanently delete and destroy all copies of the Software in your possession or control. Sections 2, 4, 5, 6, 7, 8, 10, 11, and 12 shall survive any termination of this Agreement.
+
+10. TRADEMARKS & THIRD-PARTY COMPATIBILITY
+All third-party product names, registered trademarks, brand names, and logos referenced herein (including ASIO, Steinberg Media Technologies GmbH, Microsoft Windows, Behringer, and others) are the property of their respective trademark holders. Reference to or display of third-party software, protocols, or hardware compatibility is solely for informational and compatibility purposes and does not imply endorsement, sponsorship, license, or affiliation by or with such trademark owners.
+
+11. GOVERNING LAW & DISPUTE RESOLUTION
+This Agreement shall be governed by, construed, and enforced in accordance with the laws of [Insert Your Jurisdiction/State/Country, e.g., the State of California, USA], without regard to its conflict of law principles. Any legal action, suit, or proceeding arising out of or relating to this Agreement or the Software shall be instituted exclusively in the federal or state courts located in [Insert County/City & State/Country], and you hereby irrevocably consent and submit to the personal jurisdiction and venue of such courts.
+
+12. GENERAL BOILERPLATE PROVISIONS
+(a) Severability: If any provision of this Agreement is held to be invalid, illegal, or unenforceable by a court of competent jurisdiction, such provision shall be modified to the minimum extent necessary to make it valid and enforceable, and the remaining provisions shall continue in full force and effect.
+(b) Entire Agreement: This Agreement constitutes the complete and exclusive understanding between you and Licensor regarding the Software and supersedes all prior or contemporaneous oral or written agreements, communications, understandings, or advertisements.
+(c) No Waiver: Failure or delay by Licensor to enforce any provision of this Agreement shall not constitute a waiver of such provision or any future right to enforce it.
+(d) Export Compliance: You agree to comply with all applicable national and international export laws and restrictions controlling the distribution of software.
