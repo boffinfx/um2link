@@ -1,0 +1,144 @@
+Technical Specification & Architecture Overview
+Engineering reference for the Boffin FX UM2-Link user-mode ASIO driver wrapper targeting Texas Instruments PCM2902 class-compliant USB audio interfaces.
+
+6.0 ms
+Min Roundtrip Latency
+~45%
+Latency Cut vs. ASIO4ALL
+65,536
+Frame SPSC Capacity
+1 LSB
+TPDF Linearized Dither
+1. Executive Summary & Design Philosophy
+The Boffin FX UM2-Link V2 is a dedicated, self-contained, 64-bit and 32-bit user-mode ASIO 2.3 driver wrapper written from scratch in modern C++20. It bridges incoming Digital Audio Workstation (DAW) audio requests directly to the Windows Audio Session API (WASAPI in Exclusive Event-Driven Mode).
+
+Standard Windows audio drivers route budget USB 1.0 class-compliant audio interfaces through consumer-grade middleware: the Windows Audio Service (audiosrv), the Multimedia Audio Engine (audiodg.exe), and automatic Audio Processing Objects (APOs). This introduces 30–60ms buffer delays, destructive high-frequency noise suppression, and crashes in modern 64-bit production environments.
+
+Design Objective: Provide bit-perfect, uncolored, ultra-low-latency studio tracking (5ms – 12ms round-trip) without requiring third-party wrappers like ASIO4ALL or commercial proprietary driver stacks.
+2. Hardware Architecture & Constraints
+The UM2-Link driver is optimized specifically for the Texas Instruments PCM2902 / PCM2902C and compatible Coolaudio V2902 CODEC chipsets (Vendor ID: 0x08BB, Product ID: 0x2902).
+
+Hardware Metric	Hardware Constraint	Driver Implementation Resolution
+Native Word Depth	Fixed 16-bit Linear PCM (LPCM)	Floating-point conversion with 1 LSB TPDF dithering and symmetrical saturation clamping.
+Sample Rates	Fixed at 44.1 kHz or 48.0 kHz	Rejects non-hardware rates (88.2k, 96k, 192k) with ASE_NoClock to avoid hardware PLL unlock.
+Endpoint Architecture	USB 1.1 Full-Speed Isochronous (1 ms)	Transfers arrive in 48-sample frames (at 48 kHz). Decoupled via elastic ring buffers.
+Clock Synchronization	Independent ADC & DAC USB endpoints	Elastic lock-free circular FIFO absorbs USB isochronous clock drift without waveform step-chopping.
+3. System Architecture & Deep Dive
+3.1 Subsystem A: In-Process COM Server & Registry Topology
+The driver implements Steinberg’s IASIO interface as a native In-Process COM Server. To support both modern 64-bit DAWs and 32-bit hosts (like standard VoiceMeeter), dual compilation targets are maintained:
+
+UM2LinkASIO64.dll: 64-bit native binary for Ableton Live 12, Waveform, Reaper x64.
+UM2LinkASIO32.dll: 32-bit binary targeting WoW64 subsystems and VoiceMeeter 32-bit.
+To eliminate _unloaded.dll access violation crashes (0xC0000005) during driver teardown, the binary locks itself into the host address space on attachment:
+
+Copy// In DllMain.cpp during DLL_PROCESS_ATTACH:
+HMODULE hPinned = NULL;
+GetModuleHandleExW(
+    GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_PIN,
+    reinterpret_cast<LPCWSTR>(hModule),
+    &hPinned
+);
+3.2 Subsystem B: WASAPI Exclusive Mode & True RAW Processing
+Windows 10/11 classifies USB audio inputs as communications microphones and silently applies spectral-subtraction noise gates. This causes high-frequency fluttering (“musical noise”) on decaying notes.
+
+UM2-Link V2 queries IAudioClient2 and sets AUDCLNT_STREAMOPTIONS_RAW to permanently sever Windows APOs:
+
+CopyIAudioClient2* pClient2 = nullptr;
+if (SUCCEEDED(pClient->QueryInterface(__uuidof(IAudioClient2), reinterpret_cast<void**>(&pClient2))) && pClient2) {
+    AudioClientProperties props = {};
+    props.cbSize = sizeof(AudioClientProperties);
+    props.bIsOffload = FALSE;
+    props.eCategory = AudioCategory_Media;
+    props.Options = AUDCLNT_STREAMOPTIONS_RAW; // Completely severs Windows APOs
+    pClient2->SetClientProperties(&props);
+    pClient2->Release();
+}
+3.3 Subsystem C: Lock-Free Elastic Dual-Ring Buffer Architecture
+To guarantee that audio transfers never shift Left and Right channel alignment, the circular buffer operates on packed 4-byte StereoFrame types:
+
+Copy#pragma pack(push, 2)
+struct StereoFrame {
+    int16_t left;
+    int16_t right;
+};
+#pragma pack(pop)
+static_assert(sizeof(StereoFrame) == 4, "StereoFrame must be exactly 4 bytes");
+Strict SPSC Contract: The producer method (Write) modifies exclusively m_writeIndex, and the consumer method (Read) modifies exclusively m_readIndex. SPSC race conditions that cause audio repeat/echo tails are mathematically impossible.
+3.4 Subsystem D: Real-Time Host Pump & Zero-Discontinuity Processing
+The AudioPumpThread runs with real-time MMCSS priority and configures CPU floating-point control registers to prevent denormal underflow stalls:
+
+Copy_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+_MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+
+DWORD taskIndex = 0;
+HANDLE hMmcss = AvSetMmThreadCharacteristicsW(L"Pro Audio", &taskIndex);
+SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+3.5 Subsystem E: 1 LSB TPDF Dithering
+Quantizing floating-point audio to 16-bit generates correlated distortion that sounds like a metallic ringing chime on decaying guitar notes. UM2-Link V2 linearizes the DAC stage with uncorrelated 1 LSB Triangular Probability Density Function (TPDF) dither:
+
+Copy// Fast 32-bit Xorshift PRNG for 1 LSB TPDF Dither
+inline float GenerateTpdfDither(uint32_t& state) noexcept {
+    if (state == 0) [[unlikely]] state = 0x12345678;
+    state ^= state << 13;
+    state ^= state >> 17;
+    state ^= state << 5;
+    float r1 = (static_cast<float>(state) * (1.0f / 4294967296.0f)) - 0.5f;
+
+    state ^= state << 13;
+    state ^= state >> 17;
+    state ^= state << 5;
+    float r2 = (static_cast<float>(state) * (1.0f / 4294967296.0f)) - 0.5f;
+
+    return r1 + r2; // TPDF range: [-1.0f LSB, +1.0f LSB]
+}
+3.6 Subsystem F: Dynamic Control Panel & Registry Configuration
+DAWs expect ASIO hardware settings to be configured through a driver-provided dialog. UM2-Link V2 provides an in-memory Win32 dialog created on the fly with zero resource dependencies:
+
+Supports buffer sizes: 64, 128, 256, 512, and 1024 samples.
+Persists settings to HKEY_CURRENT_USER\Software\BoffinFX\UM2-Link\BufferSize, avoiding administrative permission blocks.
+Dispatches kAsioResetRequest (3) asynchronously after dialog exit, preventing DAW UI deadlocks.
+4. Solved Engineering Defects & Post-Mortem
+Defect	Root Cause	Engineering Fix
+Heap Corruption (0xC0000374)	AudioPumpThread accessed heap vectors while disposeBuffers() cleared them on the DAW thread.	Pre-allocated fixed 1024-frame buffer pools at startup; added atomic re-entrancy guards.
+Crash in _unloaded.dll	DAW called FreeLibrary() while worker threads were still finishing in memory.	Pinned the DLL into memory using GET_MODULE_HANDLE_EX_FLAG_PIN.
+VoiceMeeter Disconnect Loop	OnDeviceRemoved caught every audio event across the entire OS (virtual cables, Bluetooth).	Filtered removal notifications strictly against the physical UM2 device endpoint ID string.
+Tailing Whistle Buzz on Low E (82.4 Hz)	Mid-stream zero-padding sliced the continuous 582-sample wave cycle.	Enforced a strict full-quantum read invariant; eliminated all mid-stream zero-filling.
+Transient Ringing / Echo Tail	1st-order IIR DC blocker filter oscillated; SPSC queue race condition rewound read indices.	Removed the redundant IIR filter; strictly isolated Write() and Read() index manipulation.
+5. Latency Benchmarks & Empirical Performance
+Benchmarked in Ableton Live 12 on Windows 11 x64 (Build 26200) at 48,000 Hz:
+
+Driver Solution	Buffer Size	Input Latency	Output Latency	Overall Roundtrip
+ASIO4ALL v2 (WDM-KS)	512 samples	21.0 ms	21.0 ms	41.9 ms
+Boffin FX UM2-Link V2	512 samples	11.3 ms	12.0 ms	23.3 ms (~45% lower)
+Boffin FX UM2-Link V2	256 samples	5.3 ms	6.0 ms	11.3 ms
+Boffin FX UM2-Link V2	128 samples	2.7 ms	3.3 ms	6.0 ms (Live Tracking)
+6. Repository Layout
+UM2-Link Ver2/
+├── CMakeLists.txt              # Build configuration for x64 and Win32 /MT static linkage
+├── build/                      # 64-bit build artifacts (UM2LinkASIO64.dll)
+├── build32/                    # 32-bit build artifacts (UM2LinkASIO32.dll)
+└── src/
+    ├── DllMain.cpp             # COM server registration, DLL pinning, lifetime locks
+    ├── Driver.h                # IASIO interface definition, types, driver state
+    ├── Driver.cpp              # ASIO logic, control panel dialog, AudioPumpThread
+    ├── RingBuffer.h            # 64k-frame lock-free SPSC FIFO, packed StereoFrame
+    ├── SampleConverter.h       # Int16 <-> Float32, 1 LSB TPDF dither, lrintf clamp
+    ├── UM2Link.def             # COM function export definitions
+    ├── WasapiEngine.h          # WASAPI Exclusive endpoint and thread declarations
+    └── WasapiEngine.cpp        # Endpoint enumeration, RAW mode, hardware sync events
+7. Build & Registration Guide
+Run within an Administrator PowerShell console:
+
+Build 32-Bit Target (for VoiceMeeter Standard / Pro)
+Copycmake -B build32 -G "Visual Studio 17 2022" -A Win32
+cmake --build build32 --config Release
+C:\Windows\SysWOW64\regsvr32.exe "build32\Release\UM2LinkASIO32.dll"
+Build 64-Bit Target (for Ableton Live, Reaper, Waveform)
+Copycmake -B build -G "Visual Studio 17 2022" -A x64
+cmake --build build --config Release
+regsvr32 "build\Release\UM2LinkASIO64.dll"
+8. Verification & Operational Guidelines
+Ableton Live Configuration: Set Driver Type to ASIO and Audio Device to Boffin FX UM2-Link. Click Hardware Setup to select 128 or 256 samples for tracking.
+VoiceMeeter Configuration: Set Output A1 to ASIO: Boffin FX UM2-Link. Under System Settings, verify Preferred Main SampleRate is 48000 Hz and ensure “Auto restart audio engine (all devices)” is DISABLED.
+Windows Mixer Gain: Run mmsys.cpl, open Recording properties for the USB Audio Device, and set the Levels slider to 0.0 dB (unity gain, ~75–80%) to avoid digital pre-gain clipping.
+Physical Hardware Checks: Keep the DIRECT MONITOR button on the Behringer UM2 OFF (out) to prevent comb-filtering phase cancellation. If tracking into high-gain tube amps, use an audio isolation transformer on the unbalanced RCA lines to eliminate physical USB 5V ground loop hum.
